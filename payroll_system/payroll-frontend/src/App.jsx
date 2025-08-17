@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Login from './Pages/Login'
+import Signup from './Pages/Signup'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+// Placeholder Dashboard component - you can replace this with your actual dashboard
+const Dashboard = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-8">
+      <div className="text-center text-white">
+        <h1 className="text-6xl font-bold mb-6">🎉 Welcome to PayrollPro Dashboard!</h1>
+        <p className="text-2xl mb-8 opacity-90">You have successfully logged in.</p>
+        <button 
+          onClick={() => window.location.href = '/login'}
+          className="px-8 py-4 bg-white/20 border-2 border-white rounded-xl text-white font-semibold text-lg hover:bg-white/30 hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+        >
+          Back to Login
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
+
+const App = () => {
+  return (
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </div>
+    </Router>
+  )
+}
+
 
 export default App
