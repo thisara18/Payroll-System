@@ -28,4 +28,10 @@ public class AdminController {
         userRepository.save(user);
         return ResponseEntity.ok("Role updated");
     }
+
+    @PreAuthorize("hasAuthority('Admin')")
+    @GetMapping("/test")
+    public String testAdmin() {
+        return "Hello Admin!";
+    }
 }

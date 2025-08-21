@@ -1,5 +1,6 @@
 package com.example.payroll_backend.Controller;
 
+import com.example.payroll_backend.Config.JwtUtil;
 import com.example.payroll_backend.Model.UserModel;
 import com.example.payroll_backend.Repository.UserRepository;
 import com.example.payroll_backend.Service.AuthService;
@@ -20,6 +21,9 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/signup")
     public ResponseEntity<String> registerUser(@RequestBody UserModel user) {
         authService.registerUser(user);
@@ -32,8 +36,9 @@ public class AuthController {
         boolean isAuthenticated = authService.authenticateUser(user.getEmail(), user.getPassword());
         if (isAuthenticated) {
             UserModel foundUser = userRepository.findByEmail(user.getEmail()).orElseThrow();
+            String token = jwtUtil.generateToken(foundUser.getEmail(), foundUser.getRole().getRoleName());
             return ResponseEntity.ok(Map.of(
-                    "message", "Login successful.",
+                    "token", token,
                     "role", foundUser.getRole().getRoleName()
             ));
         } else {
