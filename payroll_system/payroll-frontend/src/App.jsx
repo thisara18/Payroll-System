@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Pages/Login/Login'
 import Signup from './Pages/Signup/Signup'
+import Employee from './Pages/Employee/Employee'
 
 // Placeholder Dashboard component - you can replace this with your actual dashboard
 const Dashboard = () => {
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/employee" element={<Employee />} />
         </Routes>
       </div>
     </Router>
