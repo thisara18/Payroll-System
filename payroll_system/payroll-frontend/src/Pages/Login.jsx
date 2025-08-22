@@ -11,6 +11,7 @@ const Login = () => {
     fullName: ''
   })
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleInputChange = (e) => {
@@ -19,7 +20,6 @@ const Login = () => {
       ...prev,
       [name]: value
     }))
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -56,22 +56,58 @@ const Login = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (validateForm()) {
+    if (!validateForm()) return
+
+    setLoading(true)
+    try {
       if (isLogin) {
-        // Handle login logic
-        console.log('Login:', { email: formData.email, password: formData.password })
-        // Navigate to dashboard after successful login
-        navigate('/dashboard')
+        // --- LOGIN CALL ---
+        const res = await fetch('http://localhost:8080/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        })
+
+        const data = await res.json()
+        if (!res.ok) {
+          alert(data.error || 'Login failed')
+        } else {
+          // Save token & role
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('role', data.role)
+          navigate('/dashboard') // redirect
+        }
       } else {
-        // Handle signup logic
-        console.log('Signup:', formData)
-        // After successful signup, switch to login or navigate to dashboard
-        setIsLogin(true)
-        setFormData({ email: '', password: '', confirmPassword: '', fullName: '' })
-        alert('Account created successfully! Please login.')
+        // --- SIGNUP CALL ---
+        const res = await fetch('http://localhost:8080/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.fullName,
+            email: formData.email,
+            password: formData.password
+          })
+        })
+
+        if (res.ok) {
+          alert('Account created successfully! Please login.')
+          setIsLogin(true)
+          setFormData({ email: '', password: '', confirmPassword: '', fullName: '' })
+        } else {
+          const data = await res.text()
+          alert(data || 'Signup failed')
+        }
       }
+    } catch (err) {
+      console.error(err)
+      alert('Something went wrong. Try again later.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -83,150 +119,78 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-      {/* Animated Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[10%] left-[10%] w-48 h-48 bg-white/10 rounded-full animate-float opacity-20"></div>
-        <div className="absolute top-[60%] right-[15%] w-36 h-36 bg-white/10 rounded-full animate-float-delay-2 opacity-20"></div>
-        <div className="absolute bottom-[20%] left-[20%] w-24 h-24 bg-white/10 rounded-full animate-float-delay-4 opacity-20"></div>
-      </div>
-      
-      <div className="bg-white/95 backdrop-blur-lg rounded-3xl p-12 shadow-2xl w-full max-w-md relative z-10 transform transition-all duration-500 hover:scale-105">
-        {/* Header */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+      <div className="bg-white/95 rounded-3xl p-12 shadow-2xl w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-4xl">💼</span>
-            <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              PayrollPro
-            </span>
-          </div>
-          <p className="text-gray-600 text-lg">
+          <h1 className="text-3xl font-bold text-indigo-600">PayrollPro</h1>
+          <p className="text-gray-600">
             {isLogin ? 'Welcome back!' : 'Join our team!'}
           </p>
         </div>
 
-        {/* Toggle Buttons */}
-        <div className="flex bg-gray-100 rounded-xl p-1 mb-8 relative">
-          <button 
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 relative z-10 ${
-              isLogin 
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' 
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button 
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 relative z-10 ${
-              !isLogin 
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' 
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-            onClick={() => setIsLogin(false)}
-          >
-            Sign Up
-          </button>
-        </div>
-
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin && (
-            <div className="space-y-2">
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 ${
-                  errors.fullName 
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-100' 
-                    : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
-                }`}
-              />
-              {errors.fullName && <span className="text-red-500 text-sm block mt-2">{errors.fullName}</span>}
-            </div>
-          )}
-
-          <div className="space-y-2">
             <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
+              type="text"
+              name="fullName"
+              placeholder="Full Name"
+              value={formData.fullName}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border-2 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 ${
-                errors.email 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-100' 
-                  : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
-              }`}
+              className="w-full px-4 py-3 border rounded-xl"
             />
-            {errors.email && <span className="text-red-500 text-sm block mt-2">{errors.email}</span>}
-          </div>
-
-          <div className="space-y-2">
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 pr-12 border-2 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 ${
-                  errors.password 
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-100' 
-                    : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
-                }`}
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600 hover:text-indigo-600 transition-colors duration-300"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
-            {errors.password && <span className="text-red-500 text-sm block mt-2">{errors.password}</span>}
-          </div>
-
+          )}
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border rounded-xl"
+          />
+          <input
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border rounded-xl"
+          />
           {!isLogin && (
-            <div className="space-y-2">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 ${
-                  errors.confirmPassword 
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-100' 
-                    : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
-                }`}
-              />
-              {errors.confirmPassword && <span className="text-red-500 text-sm block mt-2">{errors.confirmPassword}</span>}
-            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border rounded-xl"
+            />
           )}
 
-          <button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300 mt-8"
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-3 rounded-xl"
           >
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="text-center mt-8 pt-6 border-t border-gray-200">
-          <p className="text-gray-600">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              className="text-indigo-600 font-semibold hover:text-purple-600 underline transition-colors duration-300"
-              onClick={toggleMode}
-            >
-              {isLogin ? 'Sign up here' : 'Login here'}
-            </button>
-          </p>
+        <div className="text-center mt-6">
+          {isLogin ? (
+            <p>
+              Don’t have an account?{' '}
+              <button onClick={toggleMode} className="text-indigo-600 underline">
+                Sign up
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{' '}
+              <button onClick={toggleMode} className="text-indigo-600 underline">
+                Login
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>
