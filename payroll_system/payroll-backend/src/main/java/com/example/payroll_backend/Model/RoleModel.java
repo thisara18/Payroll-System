@@ -13,6 +13,20 @@ public class RoleModel {
     @Column(name = "role_name", unique = true, nullable = false)
     private String roleName; // Admin, HR, Employee
 
+    // 🔹 Default constructor (required by JPA)
+    public RoleModel() {}
+
+    // 🔹 Constructor without ID (useful for creating roles)
+    public RoleModel(String roleName) {
+        this.roleName = roleName;
+    }
+
+    // 🔹 Constructor with ID (optional)
+    public RoleModel(Long roleId, String roleName) {
+        this.roleId = roleId;
+        this.roleName = roleName;
+    }
+
     // Getters and setters
     public Long getRoleId() { return roleId; }
     public void setRoleId(Long roleId) { this.roleId = roleId; }
