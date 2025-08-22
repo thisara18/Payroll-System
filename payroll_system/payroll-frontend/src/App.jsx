@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './Pages/Login'
+import Login from './Pages/Login/Login'
 import Signup from './Pages/Signup'
 
 // Placeholder Dashboard component - you can replace this with your actual dashboard
