@@ -5,6 +5,8 @@ import com.example.payroll_backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.payroll_backend.Repository.RoleRepository;
+import com.example.payroll_backend.Model.RoleModel;
 
 import java.util.Optional;
 
@@ -17,17 +19,19 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
 
 
     public UserModel registerUser(UserModel user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Password encryption
-        userRepository.save(user);
-
-
-
-
-        return user;
+        RoleModel defaultRole = roleRepository.findByRoleName("Employee")
+                .orElseThrow(() -> new RuntimeException("Default role not found"));
+        user.setRole(defaultRole);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
+
     public boolean authenticateUser(String email, String password) {
         Optional<UserModel> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
