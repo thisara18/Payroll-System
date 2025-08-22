@@ -2,6 +2,8 @@ package com.example.payroll_backend.Model;
 
 
 import jakarta.persistence.*;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "users")
@@ -22,6 +24,10 @@ public class UserModel {
         this.email = email;
         this.password = password;
     }
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private RoleModel role;
 
     public String getName() {
         return name;
@@ -45,5 +51,11 @@ public class UserModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    public RoleModel getRole() {
+        return role;
+    }
+    public void setRole(RoleModel role) {
+        this.role = role;
     }
 }
