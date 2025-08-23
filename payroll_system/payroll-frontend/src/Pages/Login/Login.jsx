@@ -80,7 +80,8 @@ const Login = () => {
           // Save token & role
           localStorage.setItem('token', data.token)
           localStorage.setItem('role', data.role)
-          navigate('/dashboard') // redirect
+          alert('Login successful! Welcome back.')
+          navigate('/employee') // redirect to employee page
         }
       } else {
         // --- SIGNUP CALL ---
