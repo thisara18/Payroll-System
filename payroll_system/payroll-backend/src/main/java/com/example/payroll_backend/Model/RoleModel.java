@@ -1,7 +1,15 @@
 package com.example.payroll_backend.Model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "roles")
 public class RoleModel {
@@ -13,23 +21,7 @@ public class RoleModel {
     @Column(name = "role_name", unique = true, nullable = false)
     private String roleName; // Admin, HR, Employee
 
-    // 🔹 Default constructor (required by JPA)
-    public RoleModel() {}
 
-    // 🔹 Constructor without ID (useful for creating roles)
-    public RoleModel(String roleName) {
-        this.roleName = roleName;
+    public RoleModel(String admin) {
     }
-
-    // 🔹 Constructor with ID (optional)
-    public RoleModel(Long roleId, String roleName) {
-        this.roleId = roleId;
-        this.roleName = roleName;
-    }
-
-    // Getters and setters
-    public Long getRoleId() { return roleId; }
-    public void setRoleId(Long roleId) { this.roleId = roleId; }
-    public String getRoleName() { return roleName; }
-    public void setRoleName(String roleName) { this.roleName = roleName; }
 }
