@@ -22,8 +22,8 @@ public class EmployeeService {
         return employeeRepository.findById(id).orElse(null);
     }
 
-    public EmployeeModel addEmployee(EmployeeModel employee) {
-        return employeeRepository.save(employee);
+    public EmployeeModel addEmployee(EmployeeModel employeeModel) {
+        return employeeRepository.save(employeeModel);
     }
 
     public EmployeeModel updateEmployee(Long id, EmployeeModel updated) {
