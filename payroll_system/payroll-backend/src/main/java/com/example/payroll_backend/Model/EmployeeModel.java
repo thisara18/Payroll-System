@@ -14,6 +14,9 @@ public class EmployeeModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    @Column(unique = true)
+    private String employeeCode;
     private String firstName;
     private String lastName;
 
@@ -23,6 +26,7 @@ public class EmployeeModel {
     private String phoneNumber;
 
     private String address;
+    private String city;
     private String department;
     private String designation;
     private String status;   // Active, Inactive, Resigned, etc.
@@ -31,22 +35,41 @@ public class EmployeeModel {
 
     private BigDecimal basicSalary;
 
+    private BigDecimal totalAllowances;
+    private BigDecimal totalDeductions;
+    private String taxId;
+    private String bankAccount;
+
     public EmployeeModel() {
     }
 
-    public EmployeeModel(String lastName, String firstName, LocalDate dateOfBirth, String gender, String email, String phoneNumber, String address, String department, String designation, String status, LocalDate dateOfHired, BigDecimal basicSalary) {
-        this.lastName = lastName;
+    public EmployeeModel(String employeeCode, String firstName, String lastName, LocalDate dateOfBirth, String gender, String email, String phoneNumber, String address, String city, String department, String designation, String status, LocalDate dateOfHired, BigDecimal basicSalary, BigDecimal totalAllowances, BigDecimal totalDeductions, String taxId, String bankAccount) {
+        this.employeeCode = employeeCode;
         this.firstName = firstName;
+        this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
+        this.city = city;
         this.department = department;
         this.designation = designation;
         this.status = status;
         this.dateOfHired = dateOfHired;
         this.basicSalary = basicSalary;
+        this.totalAllowances = totalAllowances;
+        this.totalDeductions = totalDeductions;
+        this.taxId = taxId;
+        this.bankAccount = bankAccount;
+    }
+
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
     }
 
     public String getFirstName() {
@@ -105,6 +128,14 @@ public class EmployeeModel {
         this.address = address;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     public String getDepartment() {
         return department;
     }
@@ -143,5 +174,37 @@ public class EmployeeModel {
 
     public void setBasicSalary(BigDecimal basicSalary) {
         this.basicSalary = basicSalary;
+    }
+
+    public BigDecimal getTotalAllowances() {
+        return totalAllowances;
+    }
+
+    public void setTotalAllowances(BigDecimal totalAllowances) {
+        this.totalAllowances = totalAllowances;
+    }
+
+    public BigDecimal getTotalDeductions() {
+        return totalDeductions;
+    }
+
+    public void setTotalDeductions(BigDecimal totalDeductions) {
+        this.totalDeductions = totalDeductions;
+    }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
     }
 }

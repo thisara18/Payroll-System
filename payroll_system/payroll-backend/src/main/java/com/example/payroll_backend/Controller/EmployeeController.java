@@ -26,6 +26,11 @@ public class EmployeeController {
         return employeeService.getEmployeeById(id);
     }
 
+    @GetMapping("/code/{employeeCode}")
+    public EmployeeModel getEmployeeByCode(@PathVariable String employeeCode) {
+        return employeeService.getEmployeeByCode(employeeCode);
+    }
+
     @PostMapping
     public EmployeeModel addEmployee(@RequestBody EmployeeModel employeeModel) {
         return employeeService.addEmployee(employeeModel);

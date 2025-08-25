@@ -6,6 +6,7 @@ import com.example.payroll_backend.Repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -14,15 +15,23 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    public List<EmployeeModel> getAllEmployees() {
+    public List<EmployeeModel> getAllEmployees()
+    {
         return employeeRepository.findAll();
     }
 
     public EmployeeModel getEmployeeById(Long id) {
         return employeeRepository.findById(id).orElse(null);
     }
+    public EmployeeModel getEmployeeByCode(String employeeCode) {
+        return employeeRepository.findByEmployeeCode(employeeCode);
+    }
 
     public EmployeeModel addEmployee(EmployeeModel employeeModel) {
+        String year = String.valueOf(LocalDate.now().getYear());
+        long count = employeeRepository.count() + 1;
+        String code = String.format("EMP%s-%03d", year, count);
+        employeeModel.setEmployeeCode(code);
         return employeeRepository.save(employeeModel);
     }
 
@@ -40,6 +49,11 @@ public class EmployeeService {
             emp.setStatus(updated.getStatus());
             emp.setDateOfHired(updated.getDateOfHired());
             emp.setBasicSalary(updated.getBasicSalary());
+            emp.setCity(updated.getCity());
+            emp.setBankAccount(updated.getBankAccount());
+            emp.setTaxId(updated.getTaxId());
+            emp.setTotalAllowances(updated.getTotalAllowances());
+            emp.setTotalDeductions(updated.getTotalDeductions());
             return employeeRepository.save(emp);
         }).orElse(null);
     }
