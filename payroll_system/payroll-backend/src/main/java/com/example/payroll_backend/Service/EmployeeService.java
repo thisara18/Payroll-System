@@ -61,4 +61,38 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);
     }
+
+    public EmployeeModel updateEmployeeByCode(String employeeCode, EmployeeModel updated) {
+        EmployeeModel emp = employeeRepository.findByEmployeeCode(employeeCode);
+        if (emp != null) {
+            emp.setFirstName(updated.getFirstName());
+            emp.setLastName(updated.getLastName());
+            emp.setDateOfBirth(updated.getDateOfBirth());
+            emp.setGender(updated.getGender());
+            emp.setEmail(updated.getEmail());
+            emp.setPhoneNumber(updated.getPhoneNumber());
+            emp.setAddress(updated.getAddress());
+            emp.setCity(updated.getCity());
+            emp.setDepartment(updated.getDepartment());
+            emp.setDesignation(updated.getDesignation());
+            emp.setStatus(updated.getStatus());
+            emp.setDateOfHired(updated.getDateOfHired());
+            emp.setBasicSalary(updated.getBasicSalary());
+            emp.setTotalAllowances(updated.getTotalAllowances());
+            emp.setTotalDeductions(updated.getTotalDeductions());
+            emp.setTaxId(updated.getTaxId());
+            emp.setBankAccount(updated.getBankAccount());
+            return employeeRepository.save(emp);
+        } else {
+            return null; // Or throw an exception if employee not found
+        }
+    }
+
+    public void deleteEmployeeByCode(String employeeCode) {
+        EmployeeModel emp = employeeRepository.findByEmployeeCode(employeeCode);
+        if (emp != null) {
+            employeeRepository.delete(emp);
+        }
+    }
+
 }

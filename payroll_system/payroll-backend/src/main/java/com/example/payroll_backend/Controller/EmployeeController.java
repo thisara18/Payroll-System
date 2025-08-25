@@ -46,4 +46,17 @@ public class EmployeeController {
         employeeService.deleteEmployee(id);
         return "Employee with ID " + id + " deleted successfully.";
     }
+
+    @PutMapping("/code/{employeeCode}")
+    public EmployeeModel updateEmployeeByCode(@PathVariable String employeeCode,
+                                              @RequestBody EmployeeModel employeeModel) {
+        return employeeService.updateEmployeeByCode(employeeCode, employeeModel);
+    }
+
+    @DeleteMapping("/code/{employeeCode}")
+    public String deleteEmployeeByCode(@PathVariable String employeeCode) {
+        employeeService.deleteEmployeeByCode(employeeCode);
+        return "Employee with Code " + employeeCode + " deleted successfully.";
+    }
+
 }
