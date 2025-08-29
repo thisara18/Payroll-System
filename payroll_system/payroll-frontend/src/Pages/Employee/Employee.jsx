@@ -61,6 +61,10 @@ const PayrollManagementSystem = () => {
   const [modalType, setModalType] = useState("view");
   const [formData, setFormData] = useState({});
 
+  // Add validation states
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
   const departments = [
     "Engineering",
     "Marketing",
@@ -70,8 +74,68 @@ const PayrollManagementSystem = () => {
     "Operations",
   ];
 
-
   const API_BASE_URL = "http://localhost:8080/api";
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Clear error for this field when user starts typing
+    if (formErrors[name]) {
+      const newErrors = { ...formErrors };
+      delete newErrors[name];
+      setFormErrors(newErrors);
+    }
+  };
+
+  const handleInputBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched({
+      ...touched,
+      [name]: true,
+    });
+
+    validateField(name, value);
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!validateForm()) {
+        return;
+      }
+
+      setLoading(true);
+
+      if (modalType === "add") {
+        await addEmployee(formData);
+      } else if (modalType === "edit") {
+        await updateEmployee(formData.id, formData);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error saving employee:", error);
+      // Error is already set by the API functions
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (employeeId) => {
+    if (window.confirm("Are you sure you want to delete this employee?")) {
+      try {
+        setLoading(true);
+        await deleteEmployee(employeeId);
+      } catch (error) {
+        console.error("Error deleting employee:", error);
+        // Error is already set by the deleteEmployee function
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   // Get auth token from localStorage
   const getAuthToken = () => {
@@ -282,43 +346,212 @@ const PayrollManagementSystem = () => {
     setSelectedEmployee(null);
     setFormData({});
     setError(null);
+    // Reset validation states
+    setFormErrors({});
+    setTouched({});
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  // Field validation function
+  const validateField = (name, value) => {
+    const newErrors = { ...formErrors };
 
-  const handleSave = async () => {
-    setLoading(true);
-    try {
-      if (modalType === "add") {
-        await addEmployee(formData);
-        alert("Employee added successfully!");
-      } else if (modalType === "edit") {
-        await updateEmployee(formData.id, formData);
-        alert("Employee updated successfully!");
-      }
-      closeModal();
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    } finally {
-      setLoading(false);
+    switch (name) {
+      case "firstName":
+        if (!value || value.trim() === "") {
+          newErrors.firstName = "First name is required";
+        } else if (value.trim().length < 2) {
+          newErrors.firstName = "First name must be at least 2 characters";
+        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+          newErrors.firstName =
+            "First name can only contain letters and spaces";
+        } else {
+          delete newErrors.firstName;
+        }
+        break;
+
+      case "lastName":
+        if (!value || value.trim() === "") {
+          newErrors.lastName = "Last name is required";
+        } else if (value.trim().length < 2) {
+          newErrors.lastName = "Last name must be at least 2 characters";
+        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+          newErrors.lastName = "Last name can only contain letters and spaces";
+        } else {
+          delete newErrors.lastName;
+        }
+        break;
+
+      case "email":
+        if (!value || value.trim() === "") {
+          newErrors.email = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = "Please enter a valid email address";
+        } else {
+          delete newErrors.email;
+        }
+        break;
+
+      case "phone":
+        if (value && !/^\+?[\d\s\-\(\)]+$/.test(value)) {
+          newErrors.phone = "Please enter a valid phone number";
+        } else if (value && value.replace(/\D/g, "").length < 10) {
+          newErrors.phone = "Phone number must be at least 10 digits";
+        } else {
+          delete newErrors.phone;
+        }
+        break;
+
+      case "department":
+        if (!value || value.trim() === "") {
+          newErrors.department = "Department is required";
+        } else {
+          delete newErrors.department;
+        }
+        break;
+
+      case "designation":
+        if (!value || value.trim() === "") {
+          newErrors.designation = "Designation is required";
+        } else if (value.trim().length < 2) {
+          newErrors.designation = "Designation must be at least 2 characters";
+        } else {
+          delete newErrors.designation;
+        }
+        break;
+
+      case "dateOfBirth":
+        if (value) {
+          const birthDate = new Date(value);
+          const today = new Date();
+          const age = today.getFullYear() - birthDate.getFullYear();
+          if (age < 18 || age > 65) {
+            newErrors.dateOfBirth =
+              "Employee must be between 18 and 65 years old";
+          } else {
+            delete newErrors.dateOfBirth;
+          }
+        }
+        break;
+
+      case "dateHired":
+        if (!value || value.trim() === "") {
+          newErrors.dateHired = "Date hired is required";
+        } else {
+          const hiredDate = new Date(value);
+          const today = new Date();
+          if (hiredDate > today) {
+            newErrors.dateHired = "Date hired cannot be in the future";
+          } else {
+            delete newErrors.dateHired;
+          }
+        }
+        break;
+
+      case "basicSalary":
+        const salary = parseFloat(value);
+        if (!value || value.trim() === "") {
+          newErrors.basicSalary = "Basic salary is required";
+        } else if (isNaN(salary) || salary <= 0) {
+          newErrors.basicSalary = "Basic salary must be a positive number";
+        } else if (salary < 10000) {
+          newErrors.basicSalary = "Basic salary must be at least Rs. 10,000";
+        } else {
+          delete newErrors.basicSalary;
+        }
+        break;
+
+      case "allowances":
+        if (value && value.trim() !== "") {
+          const allowances = parseFloat(value);
+          if (isNaN(allowances) || allowances < 0) {
+            newErrors.allowances = "Allowances must be a positive number";
+          } else {
+            delete newErrors.allowances;
+          }
+        } else {
+          delete newErrors.allowances;
+        }
+        break;
+
+      case "deductions":
+        if (value && value.trim() !== "") {
+          const deductions = parseFloat(value);
+          if (isNaN(deductions) || deductions < 0) {
+            newErrors.deductions = "Deductions must be a positive number";
+          } else {
+            delete newErrors.deductions;
+          }
+        } else {
+          delete newErrors.deductions;
+        }
+        break;
+
+      case "bankAccount":
+        if (value && !/^\d{10,20}$/.test(value.replace(/\s/g, ""))) {
+          newErrors.bankAccount = "Bank account must be 10-20 digits";
+        } else {
+          delete newErrors.bankAccount;
+        }
+        break;
+
+      case "taxId":
+        if (value && !/^[A-Z0-9]{6,15}$/.test(value.toUpperCase())) {
+          newErrors.taxId = "Tax ID must be 6-15 alphanumeric characters";
+        } else {
+          delete newErrors.taxId;
+        }
+        break;
+
+      default:
+        break;
     }
+
+    setFormErrors(newErrors);
   };
 
-  const handleDelete = async (employeeId) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
-      setLoading(true);
-      try {
-        await deleteEmployee(employeeId);
-        alert("Employee deleted successfully!");
-      } catch (err) {
-        alert(`Error: ${err.message}`);
-      } finally {
-        setLoading(false);
+  // Form validation function
+  const validateForm = () => {
+    const requiredFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "department",
+      "designation",
+      "dateHired",
+      "basicSalary",
+    ];
+    const newErrors = {};
+
+    // Validate all required fields
+    requiredFields.forEach((field) => {
+      const value = formData[field];
+      if (!value || value.toString().trim() === "") {
+        newErrors[field] = `${field
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase())} is required`;
       }
-    }
+    });
+
+    // Run individual field validations for all fields with values
+    Object.keys(formData).forEach((field) => {
+      if (formData[field] !== undefined && formData[field] !== "") {
+        validateField(field, formData[field]);
+      }
+    });
+
+    // Merge required field errors with existing validation errors
+    const allErrors = { ...formErrors, ...newErrors };
+    setFormErrors(allErrors);
+
+    // Mark all fields as touched
+    const allFields = Object.keys(formData);
+    const newTouched = {};
+    allFields.forEach((field) => {
+      newTouched[field] = true;
+    });
+    setTouched(newTouched);
+
+    return Object.keys(allErrors).length === 0;
   };
 
   const generatePayroll = (employee) => {
@@ -900,6 +1133,26 @@ const PayrollManagementSystem = () => {
             </div>
 
             <div className="p-6">
+              {/* Form Validation Error Display */}
+              {/* {Object.keys(formErrors).length > 0 && modalType !== "view" && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex">
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Please fix the following errors:
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <ul className="list-disc pl-5 space-y-1">
+                          {Object.values(formErrors).map((error, index) => (
+                            <li key={index}>{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )} */}
+
               {modalType === "view" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -1016,42 +1269,72 @@ const PayrollManagementSystem = () => {
                     )}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        First Name
+                        First Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         name="firstName"
                         value={formData.firstName || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.firstName
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
                       />
+                      {formErrors.firstName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.firstName}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name
+                        Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         name="lastName"
                         value={formData.lastName || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.lastName
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
                       />
+                      {formErrors.lastName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.lastName}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email
+                        Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
                         name="email"
                         value={formData.email || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.email
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
                       />
+                      {formErrors.email && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.email}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1062,18 +1345,34 @@ const PayrollManagementSystem = () => {
                         name="phone"
                         value={formData.phone || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.phone
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="e.g., +1 (555) 123-4567"
                       />
+                      {formErrors.phone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.phone}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Department
+                        Department <span className="text-red-500">*</span>
                       </label>
                       <select
                         name="department"
                         value={formData.department || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.department
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
                       >
                         <option value="">Select Department</option>
@@ -1083,19 +1382,35 @@ const PayrollManagementSystem = () => {
                           </option>
                         ))}
                       </select>
+                      {formErrors.department && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.department}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Designation
+                        Designation <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         name="designation"
                         value={formData.designation || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.designation
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
+                        placeholder="e.g., Software Engineer"
                       />
+                      {formErrors.designation && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.designation}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1109,21 +1424,41 @@ const PayrollManagementSystem = () => {
                         name="dateOfBirth"
                         value={formData.dateOfBirth || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.dateOfBirth
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                       />
+                      {formErrors.dateOfBirth && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.dateOfBirth}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date Hired
+                        Date Hired <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
                         name="dateHired"
                         value={formData.dateHired || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.dateHired
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         required
                       />
+                      {formErrors.dateHired && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.dateHired}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1156,18 +1491,29 @@ const PayrollManagementSystem = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Basic Salary
+                        Basic Salary <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
                         name="basicSalary"
                         value={formData.basicSalary || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.basicSalary
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         min="0"
                         step="1000"
                         required
+                        placeholder="e.g., 50000"
                       />
+                      {formErrors.basicSalary && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.basicSalary}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1178,10 +1524,21 @@ const PayrollManagementSystem = () => {
                         name="allowances"
                         value={formData.allowances || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.allowances
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         min="0"
                         step="100"
+                        placeholder="e.g., 5000"
                       />
+                      {formErrors.allowances && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.allowances}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1192,10 +1549,21 @@ const PayrollManagementSystem = () => {
                         name="deductions"
                         value={formData.deductions || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.deductions
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         min="0"
                         step="100"
+                        placeholder="e.g., 1000"
                       />
+                      {formErrors.deductions && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.deductions}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1209,6 +1577,7 @@ const PayrollManagementSystem = () => {
                         name="address"
                         value={formData.address || ""}
                         onChange={handleInputChange}
+                        onBlur={handleInputBlur}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Street address"
                       />
@@ -1224,6 +1593,7 @@ const PayrollManagementSystem = () => {
                           value={formData.city || ""}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="City name"
                         />
                       </div>
                       <div>
@@ -1235,9 +1605,19 @@ const PayrollManagementSystem = () => {
                           name="bankAccount"
                           value={formData.bankAccount || ""}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Account number"
+                          onBlur={handleInputBlur}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            formErrors.bankAccount
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Account number (10-20 digits)"
                         />
+                        {formErrors.bankAccount && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {formErrors.bankAccount}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -1249,9 +1629,19 @@ const PayrollManagementSystem = () => {
                         name="taxId"
                         value={formData.taxId || ""}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Tax identification number"
+                        onBlur={handleInputBlur}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.taxId
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="Tax identification number (6-15 characters)"
                       />
+                      {formErrors.taxId && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.taxId}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </form>
