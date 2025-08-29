@@ -32,7 +32,7 @@ import {
 
 const PayrollManagementSystem = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("employees");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -689,10 +689,10 @@ const PayrollManagementSystem = () => {
         <div className="px-6">
           <nav className="flex space-x-8">
             {[
+              { id: "dashboard", label: "Dashboard", icon: TrendingUp },
               { id: "employees", label: "Employees", icon: Users },
               { id: "payroll", label: "Payroll", icon: DollarSign },
               { id: "reports", label: "Reports", icon: FileText },
-              { id: "dashboard", label: "Dashboard", icon: TrendingUp },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
