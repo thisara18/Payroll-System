@@ -31,6 +31,11 @@ public class EmployeeController {
         return employeeService.getEmployeeByCode(employeeCode);
     }
 
+    @GetMapping("/nic/{nic}")
+    public EmployeeModel getEmployeeByNic(@PathVariable String nic) {
+        return employeeService.getEmployeeByNic(nic);
+    }
+
     @PostMapping
     public EmployeeModel addEmployee(@RequestBody EmployeeModel employeeModel) {
         return employeeService.addEmployee(employeeModel);
