@@ -32,10 +32,20 @@ import {
 
 const PayrollManagementSystem = () => {
   const navigate = useNavigate();
+  
+  // Group all useState declarations at the top
   const [activeTab, setActiveTab] = useState("dashboard");
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("view");
+  const [formData, setFormData] = useState({});
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   const [payrolls, setPayrolls] = useState([
     // Keep existing payroll data for now
@@ -54,16 +64,6 @@ const PayrollManagementSystem = () => {
     },
     // ... other payroll entries
   ]);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("view");
-  const [formData, setFormData] = useState({});
-
-  // Add validation states
-  const [formErrors, setFormErrors] = useState({});
-  const [touched, setTouched] = useState({});
 
   const departments = [
     "Engineering",
@@ -164,7 +164,7 @@ const PayrollManagementSystem = () => {
       if (!response.ok) {
         throw new Error(`Failed to fetch employees: ${response.statusText}`);
       }
-
+           
       const data = await response.json();
       console.log("Fetched employees:", data);
       setEmployees(data);
@@ -178,7 +178,7 @@ const PayrollManagementSystem = () => {
 
   // Add new employee
   const addEmployee = async (employeeData) => {
-    try {
+    try {   
       const response = await fetch(`${API_BASE_URL}/employees`, {
         method: "POST",
         headers: getApiHeaders(),
@@ -632,6 +632,446 @@ const PayrollManagementSystem = () => {
       </div>
     );
   }
+
+  const steps = [
+    { number: 1, title: "Personal Information" },
+    { number: 2, title: "Employment Details" },
+    { number: 3, title: "Salary Information" },
+    { number: 4, title: "Additional Information" }
+  ];
+
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Modify the modal form section to include stepper and step navigation
+  const renderFormContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Personal Information fields */}
+              {modalType === "edit" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Employee Code
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.employeeCode || ""}
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.firstName
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.firstName}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.lastName
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.lastName}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.email
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.email}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.phone
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="e.g., +1 (555) 123-4567"
+                />
+                {formErrors.phone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.phone}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.dateOfBirth
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {formErrors.dateOfBirth && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.dateOfBirth}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender || "Male"}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Employment Details fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="department"
+                  value={formData.department || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.department
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.department && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.department}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Designation <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="designation"
+                  value={formData.designation || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.designation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                  placeholder="e.g., Software Engineer"
+                />
+                {formErrors.designation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.designation}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Hired <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="dateHired"
+                  value={formData.dateHired || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.dateHired
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.dateHired && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.dateHired}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={formData.status || "Active"}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Salary Information fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Basic Salary <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="basicSalary"
+                  value={formData.basicSalary || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.basicSalary
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  min="0"
+                  step="1000"
+                  required
+                />
+                {formErrors.basicSalary && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.basicSalary}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Allowances
+                </label>
+                <input
+                  type="number"
+                  name="allowances"
+                  value={formData.allowances || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.allowances
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  min="0"
+                  step="100"
+                  placeholder="e.g., 5000"
+                />
+                {formErrors.allowances && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.allowances}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deductions
+                </label>
+                <input
+                  type="number"
+                  name="deductions"
+                  value={formData.deductions || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.deductions
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  min="0"
+                  step="100"
+                  placeholder="e.g., 1000"
+                />
+                {formErrors.deductions && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.deductions}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Additional Information fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address || ""}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Street address"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city || ""}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="City name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank Account
+                  </label>
+                  <input
+                    type="text"
+                    name="bankAccount"
+                    value={formData.bankAccount || ""}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.bankAccount
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="Account number (10-20 digits)"
+                  />
+                  {formErrors.bankAccount && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.bankAccount}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tax ID
+                </label>
+                <input
+                  type="text"
+                  name="taxId"
+                  value={formData.taxId || ""}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    formErrors.taxId
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Tax identification number (6-15 characters)"
+                />
+                {formErrors.taxId && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors.taxId}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1116,6 +1556,7 @@ const PayrollManagementSystem = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
                 {modalType === "view"
@@ -1132,27 +1573,8 @@ const PayrollManagementSystem = () => {
               </button>
             </div>
 
+            {/* Modal Content */}
             <div className="p-6">
-              {/* Form Validation Error Display */}
-              {/* {Object.keys(formErrors).length > 0 && modalType !== "view" && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <div className="flex">
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Please fix the following errors:
-                      </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        <ul className="list-disc pl-5 space-y-1">
-                          {Object.values(formErrors).map((error, index) => (
-                            <li key={index}>{error}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
               {modalType === "view" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -1252,433 +1674,91 @@ const PayrollManagementSystem = () => {
                   </div>
                 </div>
               ) : (
-                <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {modalType === "edit" && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Employee Code
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.employeeCode || ""}
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        First Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.firstName
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                      />
-                      {formErrors.firstName && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.firstName}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.lastName
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                      />
-                      {formErrors.lastName && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.lastName}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.email
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                      />
-                      {formErrors.email && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.email}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.phone
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="e.g., +1 (555) 123-4567"
-                      />
-                      {formErrors.phone && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.phone}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Department <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="department"
-                        value={formData.department || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.department
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                      >
-                        <option value="">Select Department</option>
-                        {departments.map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
-                          </option>
-                        ))}
-                      </select>
-                      {formErrors.department && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.department}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Designation <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="designation"
-                        value={formData.designation || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.designation
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                        placeholder="e.g., Software Engineer"
-                      />
-                      {formErrors.designation && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.designation}
-                        </p>
-                      )}
+                <div className="space-y-6">
+                  {/* Stepper */}
+                  <div className="px-6 pt-6">
+                    <div className="flex items-center justify-between mb-8">
+                      {steps.map((step, index) => (
+                        <div key={step.number} className="flex items-center">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              currentStep >= step.number
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-200 text-gray-600"
+                            }`}
+                          >
+                            {step.number}
+                          </div>
+                          <div className="ml-2">
+                            <p className="text-sm font-medium text-gray-900">
+                              {step.title}
+                            </p>
+                          </div>
+                          {index < steps.length - 1 && (
+                            <div
+                              className={`h-0.5 w-12 mx-4 ${
+                                currentStep > step.number
+                                  ? "bg-blue-600"
+                                  : "bg-gray-200"
+                              }`}
+                            />
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.dateOfBirth
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                      />
-                      {formErrors.dateOfBirth && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.dateOfBirth}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date Hired <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="date"
-                        name="dateHired"
-                        value={formData.dateHired || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.dateHired
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        required
-                      />
-                      {formErrors.dateHired && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.dateHired}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Gender
-                      </label>
-                      <select
-                        name="gender"
-                        value={formData.gender || "Male"}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
-                      <select
-                        name="status"
-                        value={formData.status || "Active"}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Basic Salary <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        name="basicSalary"
-                        value={formData.basicSalary || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.basicSalary
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        min="0"
-                        step="1000"
-                        required
-                        placeholder="e.g., 50000"
-                      />
-                      {formErrors.basicSalary && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.basicSalary}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Allowances
-                      </label>
-                      <input
-                        type="number"
-                        name="allowances"
-                        value={formData.allowances || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.allowances
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        min="0"
-                        step="100"
-                        placeholder="e.g., 5000"
-                      />
-                      {formErrors.allowances && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.allowances}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Deductions
-                      </label>
-                      <input
-                        type="number"
-                        name="deductions"
-                        value={formData.deductions || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.deductions
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        min="0"
-                        step="100"
-                        placeholder="e.g., 1000"
-                      />
-                      {formErrors.deductions && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.deductions}
-                        </p>
-                      )}
-                    </div>
+                  {/* Form Content */}
+                  <div className="px-6">
+                    {renderFormContent()}
                   </div>
 
-                  <div className="md:col-span-2 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Address
-                      </label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={formData.address || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Street address"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          City
-                        </label>
-                        <input
-                          type="text"
-                          name="city"
-                          value={formData.city || ""}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="City name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Bank Account
-                        </label>
-                        <input
-                          type="text"
-                          name="bankAccount"
-                          value={formData.bankAccount || ""}
-                          onChange={handleInputChange}
-                          onBlur={handleInputBlur}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            formErrors.bankAccount
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="Account number (10-20 digits)"
-                        />
-                        {formErrors.bankAccount && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {formErrors.bankAccount}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tax ID
-                      </label>
-                      <input
-                        type="text"
-                        name="taxId"
-                        value={formData.taxId || ""}
-                        onChange={handleInputChange}
-                        onBlur={handleInputBlur}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.taxId
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Tax identification number (6-15 characters)"
-                      />
-                      {formErrors.taxId && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.taxId}
-                        </p>
+                  {/* Navigation Buttons */}
+                  <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <button
+                      onClick={handlePrevious}
+                      className={`px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 ${
+                        currentStep === 1 ? 'invisible' : ''
+                      }`}
+                    >
+                      Previous
+                    </button>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={closeModal}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      {currentStep === steps.length ? (
+                        <button
+                          onClick={handleSave}
+                          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          disabled={loading}
+                        >
+                          <Save className="h-4 w-4" />
+                          <span>{loading ? "Saving..." : "Save Employee"}</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleNext}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                          Next
+                        </button>
                       )}
                     </div>
                   </div>
-                </form>
+                </div>
               )}
             </div>
-
-            {modalType !== "view" && (
-              <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
-                <button
-                  onClick={closeModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={loading}
-                >
-                  <Save className="h-4 w-4" />
-                  <span>
-                    {loading
-                      ? "Saving..."
-                      : modalType === "edit"
-                      ? "Update"
-                      : "Save"}{" "}
-                    Employee
-                  </span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
+        
     </div>
   );
 };
 
 export default PayrollManagementSystem;
+
