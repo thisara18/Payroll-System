@@ -64,4 +64,16 @@ public class EmployeeController {
         return "Employee with Code " + employeeCode + " deleted successfully.";
     }
 
+    @PutMapping("/nic/{nic}")
+    public EmployeeModel updateEmployeeByNic(@PathVariable String nic,
+                                              @RequestBody EmployeeModel employeeModel) {
+        return employeeService.updateEmployeeByNic(nic, employeeModel);
+    }
+
+    @DeleteMapping("/nic/{nic}")
+    public String deleteEmployeeByNic(@PathVariable String nic) {
+        employeeService.deleteEmployeeByNic(nic);
+        return "Employee with Nic " + nic + " deleted successfully.";
+    }
+
 }
