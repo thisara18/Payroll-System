@@ -48,11 +48,5 @@ public class EmployeeModel {
     private String taxId;
     private String bankAccount;
 
-    public String getNic() {
-        return nic;
-    }
 
-    public void setNic(String nic) {
-        this.nic = nic;
-    }
 }
