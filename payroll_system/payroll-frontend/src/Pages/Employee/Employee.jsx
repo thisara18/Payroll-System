@@ -28,12 +28,30 @@ import {
   IndianRupee,
   Coins,
   Bitcoin,
+  LayoutDashboard,
+  MenuIcon,
+  Home,
+  Briefcase,
+  UserCog,
+  Receipt,
+  PieChart,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 const PayrollManagementSystem = () => {
   const navigate = useNavigate();
   
-  // Group all useState declarations at the top
+  // Define menuItems before using it
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "employees", label: "Management", icon: Users },
+    { id: "payroll", label: "Payroll", icon: DollarSign },
+    { id: "reports", label: "Reports", icon: FileText },
+    { id: "settings", label: "Settings", icon: SettingsIcon },
+  ];
+
+  // State declarations
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -325,7 +343,7 @@ const PayrollManagementSystem = () => {
         department: employee.department,
         designation: employee.designation,
         dateOfBirth: employee.dateOfBirth,
-        dateHired: employee.dateOfHired,
+        dateHired: employee.dateHired,
         gender: employee.gender,
         status: employee.status,
         basicSalary: employee.basicSalary,
@@ -1074,691 +1092,712 @@ const PayrollManagementSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Payroll Management System
-              </h1>
-              <p className="text-gray-600">
-                Manage employees and payroll efficiently
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Bell className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Settings className="h-5 w-5" />
-              </button>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <span>Logged in as Admin</span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                title="Logout"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mx-6 mt-4 rounded">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="float-right text-red-700 hover:text-red-900"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6">
-          <nav className="flex space-x-8">
-            {[
-              { id: "dashboard", label: "Dashboard", icon: TrendingUp },
-              { id: "employees", label: "Employees", icon: Users },
-              { id: "payroll", label: "Payroll", icon: DollarSign },
-              { id: "reports", label: "Reports", icon: FileText },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === id
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <main className="p-6">
-        {activeTab === "dashboard" && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Employees"
-                value={employees.length}
-                icon={Users}
-                color="bg-blue-500"
-                trend="+5% from last month"
-              />
-              <StatCard
-                title="Active Employees"
-                value={employees.filter((e) => e.status === "Active").length}
-                icon={UserCheck}
-                color="bg-green-500"
-                trend="+2% from last month"
-              />
-              <StatCard
-                title="Monthly Payroll"
-                value={`Rs.${payrolls
-                  .reduce((sum, p) => sum + p.netPay, 0)
-                  .toLocaleString()}`}
-                icon={DollarSign}
-                color="bg-purple-500"
-                trend="+8% from last month"
-              />
-              <StatCard
-                title="Pending Payments"
-                value={payrolls.filter((p) => p.status === "Pending").length}
-                icon={Clock}
-                color="bg-orange-500"
-              />
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Recent Activity
-              </h3>
-              <div className="space-y-4">
-                {payrolls.slice(0, 5).map((payroll) => (
-                  <div
-                    key={payroll.id}
-                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Bitcoin className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          Payroll generated for {payroll.employeeName}
-                        </p>
-                        <p className="text-xs text-gray-500">{payroll.month}</p>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        payroll.status === "Paid"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {payroll.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "employees" && (
-          <div className="space-y-6">
-            {/* Search and Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <input
-                      type="text"
-                      placeholder="Search employees..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <button
-                    onClick={fetchEmployees}
-                    className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    disabled={loading}
-                  >
-                    <Filter className="h-4 w-4" />
-                    <span>{loading ? "Refreshing..." : "Refresh"}</span>
-                  </button>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <Download className="h-4 w-4" />
-                    <span>Export</span>
-                  </button>
-                  <button
-                    onClick={() => openModal("add")}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add Employee</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Employee List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Employee
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Department
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Designation
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Salary
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredEmployees.map((employee) => (
-                      <tr key={employee.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-700">
-                                {employee.firstName?.[0]}
-                                {employee.lastName?.[0]}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {employee.firstName} {employee.lastName}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {employee.employeeCode}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.department}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.designation}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Rs.{employee.basicSalary?.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              employee.status === "Active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {employee.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => openModal("view", employee)}
-                              className="text-blue-600 hover:text-blue-900"
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => openModal("edit", employee)}
-                              className="text-green-600 hover:text-green-900"
-                              title="Edit Employee"
-                              disabled={loading}
-                            >
-                              <Edit3 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(employee.id)}
-                              className="text-red-600 hover:text-red-900"
-                              title="Delete Employee"
-                              disabled={loading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => generatePayroll(employee)}
-                              className="text-purple-600 hover:text-purple-900"
-                              title="Generate Payroll"
-                            >
-                              <DollarSign className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* No employees message */}
-            {filteredEmployees.length === 0 && !loading && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No employees found
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  {searchTerm
-                    ? "Try adjusting your search criteria."
-                    : "Get started by adding your first employee."}
-                </p>
-                <button
-                  onClick={() => openModal("add")}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Employee
-                </button>
-              </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div
+        className={`${sidebarOpen ? "w-64" : "w-20"} bg-gray-200 border-r border-gray-200 fixed h-full transition-all duration-300 z-30`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+            {sidebarOpen ? (
+              <span className="text-xl font-semibold text-gray-800">PayrollMS</span>
+            ) : (
+              <span className="text-xl font-semibold text-gray-800">P</span>
             )}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100"
+            >
+              <MenuIcon className="h-5 w-5 text-gray-500" />
+            </button>
           </div>
-        )}
 
-        {/* Continue with other tabs (payroll, reports) - keeping existing code */}
-        {activeTab === "payroll" && (
-          <div className="space-y-6">
-            {/* Payroll Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Payroll Management
-                  </h2>
-                  <p className="text-gray-600">
-                    Manage employee payrolls and payments
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option>February 2024</option>
-                    <option>January 2024</option>
-                    <option>December 2023</option>
-                  </select>
-                  <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Generate All Payroll
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto py-4">
+            <div className="px-4 space-y-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                      activeTab === item.id
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {sidebarOpen && <span>{item.label}</span>}
                   </button>
-                </div>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* User Profile */}
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-white">A</span>
               </div>
-            </div>
-
-            {/* Payroll Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Employee
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Month
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Basic Salary
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Allowances
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Deductions
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Net Pay
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {payrolls.map((payroll) => (
-                      <tr key={payroll.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {payroll.employeeName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {payroll.employeeId}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {payroll.month}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Rs{payroll.basicSalary.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Rs.{payroll.allowances.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Rs
-                          {(payroll.deductions + payroll.tax).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Rs.{payroll.netPay.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              payroll.status === "Paid"
-                                ? "bg-green-100 text-green-800"
-                                : payroll.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
-                          >
-                            {payroll.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button className="text-green-600 hover:text-green-900">
-                              <Download className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "reports" && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Reports & Analytics
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
-                  <FileText className="h-8 w-8 text-blue-600 mb-3" />
-                  <h3 className="font-medium text-gray-900">Employee Report</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Complete employee information report
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
-                  <DollarSign className="h-8 w-8 text-green-600 mb-3" />
-                  <h3 className="font-medium text-gray-900">Payroll Summary</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Monthly payroll summary report
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
-                  <TrendingUp className="h-8 w-8 text-purple-600 mb-3" />
-                  <h3 className="font-medium text-gray-900">Tax Report</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Tax deduction and compliance report
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {modalType === "view"
-                  ? "Employee Details"
-                  : modalType === "edit"
-                  ? "Edit Employee"
-                  : "Add New Employee"}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6">
-              {modalType === "view" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Employee Code
-                      </label>
-                      <p className="text-sm text-gray-900">
-                        {selectedEmployee?.employeeCode}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name
-                      </label>
-                      <p className="text-sm text-gray-900">
-                        {selectedEmployee?.firstName}{" "}
-                        {selectedEmployee?.lastName}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email
-                      </label>
-                      <p className="text-sm text-gray-900 flex items-center">
-                        <Mail className="h-4 w-4 mr-2" />
-                        {selectedEmployee?.email}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone
-                      </label>
-                      <p className="text-sm text-gray-900 flex items-center">
-                        <Phone className="h-4 w-4 mr-2" />
-                        {selectedEmployee?.phoneNumber}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Department
-                      </label>
-                      <p className="text-sm text-gray-900 flex items-center">
-                        <Building className="h-4 w-4 mr-2" />
-                        {selectedEmployee?.department}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Designation
-                      </label>
-                      <p className="text-sm text-gray-900">
-                        {selectedEmployee?.designation}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Basic Salary
-                      </label>
-                      <p className="text-sm text-gray-900">
-                        Rs.{selectedEmployee?.basicSalary?.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date Hired
-                      </label>
-                      <p className="text-sm text-gray-900">
-                        {selectedEmployee?.dateOfHired}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          selectedEmployee?.status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {selectedEmployee?.status}
-                      </span>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Address
-                      </label>
-                      <p className="text-sm text-gray-900 flex items-center">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {selectedEmployee?.address}, {selectedEmployee?.city}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Stepper */}
-                  <div className="px-6 pt-6">
-                    <div className="flex items-center justify-between mb-8">
-                      {steps.map((step, index) => (
-                        <div key={step.number} className="flex items-center">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              currentStep >= step.number
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-200 text-gray-600"
-                            }`}
-                          >
-                            {step.number}
-                          </div>
-                          <div className="ml-2">
-                            <p className="text-sm font-medium text-gray-900">
-                              {step.title}
-                            </p>
-                          </div>
-                          {index < steps.length - 1 && (
-                            <div
-                              className={`h-0.5 w-12 mx-4 ${
-                                currentStep > step.number
-                                  ? "bg-blue-600"
-                                  : "bg-gray-200"
-                              }`}
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Form Content */}
-                  <div className="px-6">
-                    {renderFormContent()}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <button
-                      onClick={handlePrevious}
-                      className={`px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 ${
-                        currentStep === 1 ? 'invisible' : ''
-                      }`}
-                    >
-                      Previous
-                    </button>
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={closeModal}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                      {currentStep === steps.length ? (
-                        <button
-                          onClick={handleSave}
-                          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                          disabled={loading}
-                        >
-                          <Save className="h-4 w-4" />
-                          <span>{loading ? "Saving..." : "Save Employee"}</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleNext}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                          Next
-                        </button>
-                      )}
-                    </div>
-                  </div>
+              {sidebarOpen && (
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">Admin User</p>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
           </div>
         </div>
-      )}
-        
+      </div>
+
+      {/* Main Content Wrapper */}
+      <div className={`flex-1 ${sidebarOpen ? "ml-64" : "ml-20"} transition-all duration-300`}>
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 h-16 fixed top-0 right-0 left-0 z-20 flex items-center">
+          <div className={`flex-1 px-6 flex items-center justify-between ${sidebarOpen ? "ml-64" : "ml-20"} transition-all duration-300`}>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {menuItems.find(item => item.id === activeTab)?.label || "Dashboard"}
+            </h1>
+            <div className="flex items-center space-x-4">
+              <button className="p-2 text-gray-400 hover:text-gray-600">
+                <Bell className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-400 hover:text-gray-600">
+                <SettingsIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="pt-16 p-6">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mx-6 mt-4 rounded">
+              <strong className="font-bold">Error: </strong>
+              <span className="block sm:inline">{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="float-right text-red-700 hover:text-red-900"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Tab Content */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Employees"
+                  value={employees.length}
+                  icon={Users}
+                  color="bg-blue-500"
+                  trend="+5% from last month"
+                />
+                <StatCard
+                  title="Active Employees"
+                  value={employees.filter((e) => e.status === "Active").length}
+                  icon={UserCheck}
+                  color="bg-green-500"
+                  trend="+2% from last month"
+                />
+                <StatCard
+                  title="Monthly Payroll"
+                  value={`Rs.${payrolls
+                    .reduce((sum, p) => sum + p.netPay, 0)
+                    .toLocaleString()}`}
+                  icon={DollarSign}
+                  color="bg-purple-500"
+                  trend="+8% from last month"
+                />
+                <StatCard
+                  title="Pending Payments"
+                  value={payrolls.filter((p) => p.status === "Pending").length}
+                  icon={Clock}
+                  color="bg-orange-500"
+                />
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Recent Activity
+                </h3>
+                <div className="space-y-4">
+                  {payrolls.slice(0, 5).map((payroll) => (
+                    <div
+                      key={payroll.id}
+                      className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Bitcoin className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            Payroll generated for {payroll.employeeName}
+                          </p>
+                          <p className="text-xs text-gray-500">{payroll.month}</p>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          payroll.status === "Paid"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {payroll.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "employees" && (
+            <div className="space-y-6">
+              {/* Search and Actions */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <input
+                        type="text"
+                        placeholder="Search employees..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <button
+                      onClick={fetchEmployees}
+                      className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      disabled={loading}
+                    >
+                      <Filter className="h-4 w-4" />
+                      <span>{loading ? "Refreshing..." : "Refresh"}</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                      <Download className="h-4 w-4" />
+                      <span>Export</span>
+                    </button>
+                    <button
+                      onClick={() => openModal("add")}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      disabled={loading}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add Employee</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Employee List */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Employee
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Department
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Designation
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Salary
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredEmployees.map((employee) => (
+                        <tr key={employee.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {employee.firstName?.[0]}
+                                  {employee.lastName?.[0]}
+                                </span>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {employee.firstName} {employee.lastName}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {employee.employeeCode}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {employee.department}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {employee.designation}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Rs.{employee.basicSalary?.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                employee.status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {employee.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => openModal("view", employee)}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => openModal("edit", employee)}
+                                className="text-green-600 hover:text-green-900"
+                                title="Edit Employee"
+                                disabled={loading}
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(employee.id)}
+                                className="text-red-600 hover:text-red-900"
+                                title="Delete Employee"
+                                disabled={loading}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => generatePayroll(employee)}
+                                className="text-purple-600 hover:text-purple-900"
+                                title="Generate Payroll"
+                              >
+                                <DollarSign className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* No employees message */}
+              {filteredEmployees.length === 0 && !loading && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No employees found
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    {searchTerm
+                      ? "Try adjusting your search criteria."
+                      : "Get started by adding your first employee."}
+                  </p>
+                  <button
+                    onClick={() => openModal("add")}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Employee
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "payroll" && (
+            <div className="space-y-6">
+              {/* Payroll Header */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Payroll Management
+                    </h2>
+                    <p className="text-gray-600">
+                      Manage employee payrolls and payments
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      <option>February 2024</option>
+                      <option>January 2024</option>
+                      <option>December 2023</option>
+                    </select>
+                    <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                      Generate All Payroll
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payroll Table */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Employee
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Month
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Basic Salary
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Allowances
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Deductions
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Net Pay
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {payrolls.map((payroll) => (
+                        <tr key={payroll.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {payroll.employeeName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {payroll.employeeId}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {payroll.month}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Rs{payroll.basicSalary.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Rs.{payroll.allowances.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Rs
+                            {(payroll.deductions + payroll.tax).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            Rs.{payroll.netPay.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                payroll.status === "Paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : payroll.status === "Pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {payroll.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button className="text-blue-600 hover:text-blue-900">
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              <button className="text-green-600 hover:text-green-900">
+                                <Download className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "reports" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Reports & Analytics
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
+                    <FileText className="h-8 w-8 text-blue-600 mb-3" />
+                    <h3 className="font-medium text-gray-900">Employee Report</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Complete employee information report
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
+                    <DollarSign className="h-8 w-8 text-green-600 mb-3" />
+                    <h3 className="font-medium text-gray-900">Payroll Summary</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Monthly payroll summary report
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 cursor-pointer">
+                    <TrendingUp className="h-8 w-8 text-purple-600 mb-3" />
+                    <h3 className="font-medium text-gray-900">Tax Report</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Tax deduction and compliance report
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {modalType === "view"
+                      ? "Employee Details"
+                      : modalType === "edit"
+                      ? "Edit Employee"
+                      : "Add New Employee"}
+                  </h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6">
+                  {modalType === "view" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Employee Code
+                          </label>
+                          <p className="text-sm text-gray-900">
+                            {selectedEmployee?.employeeCode}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name
+                          </label>
+                          <p className="text-sm text-gray-900">
+                            {selectedEmployee?.firstName}{" "}
+                            {selectedEmployee?.lastName}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Email
+                          </label>
+                          <p className="text-sm text-gray-900 flex items-center">
+                            <Mail className="h-4 w-4 mr-2" />
+                            {selectedEmployee?.email}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone
+                          </label>
+                          <p className="text-sm text-gray-900 flex items-center">
+                            <Phone className="h-4 w-4 mr-2" />
+                            {selectedEmployee?.phoneNumber}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Department
+                          </label>
+                          <p className="text-sm text-gray-900 flex items-center">
+                            <Building className="h-4 w-4 mr-2" />
+                            {selectedEmployee?.department}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Designation
+                          </label>
+                          <p className="text-sm text-gray-900">
+                            {selectedEmployee?.designation}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Basic Salary
+                          </label>
+                          <p className="text-sm text-gray-900">
+                            Rs.{selectedEmployee?.basicSalary?.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Date Hired
+                          </label>
+                          <p className="text-sm text-gray-900">
+                            {selectedEmployee?.dateOfHired}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Status
+                          </label>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              selectedEmployee?.status === "Active"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {selectedEmployee?.status}
+                          </span>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Address
+                          </label>
+                          <p className="text-sm text-gray-900 flex items-center">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {selectedEmployee?.address}, {selectedEmployee?.city}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Stepper */}
+                      <div className="px-6 pt-6">
+                        <div className="flex items-center justify-between mb-8">
+                          {steps.map((step, index) => (
+                            <div key={step.number} className="flex items-center">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                  currentStep >= step.number
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200 text-gray-600"
+                                }`}
+                              >
+                                {step.number}
+                              </div>
+                              <div className="ml-2">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {step.title}
+                                </p>
+                              </div>
+                              {index < steps.length - 1 && (
+                                <div
+                                  className={`h-0.5 w-12 mx-4 ${
+                                    currentStep > step.number
+                                      ? "bg-blue-600"
+                                      : "bg-gray-200"
+                                  }`}
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Form Content */}
+                      <div className="px-6">
+                        {renderFormContent()}
+                      </div>
+
+                      {/* Navigation Buttons */}
+                      <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <button
+                          onClick={handlePrevious}
+                          className={`px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 ${
+                            currentStep === 1 ? 'invisible' : ''
+                          }`}
+                        >
+                          Previous
+                        </button>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={closeModal}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                          {currentStep === steps.length ? (
+                            <button
+                              onClick={handleSave}
+                              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                              disabled={loading}
+                            >
+                              <Save className="h-4 w-4" />
+                              <span>{loading ? "Saving..." : "Save Employee"}</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={handleNext}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            >
+                              Next
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
 
 export default PayrollManagementSystem;
-
