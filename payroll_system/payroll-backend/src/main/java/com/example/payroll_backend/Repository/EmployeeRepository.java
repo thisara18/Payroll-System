@@ -11,6 +11,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeModel, Long> {
     EmployeeModel findByPhoneNumber(String phoneNumber);
 
     EmployeeModel findByEmployeeCode(String employeeCode);
+    EmployeeModel findByNic(String nic);
 
 
 }

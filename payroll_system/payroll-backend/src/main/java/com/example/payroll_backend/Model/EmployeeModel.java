@@ -32,7 +32,7 @@ public class EmployeeModel {
     private String gender;
     private String email;
     private String phoneNumber;
-
+    private String nic;
     private String address;
     private String city;
     private String department;
@@ -47,5 +47,6 @@ public class EmployeeModel {
     private BigDecimal totalDeductions;
     private String taxId;
     private String bankAccount;
+
 
 }
