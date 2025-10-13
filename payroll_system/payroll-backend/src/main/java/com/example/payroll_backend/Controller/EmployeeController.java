@@ -31,6 +31,15 @@ public class EmployeeController {
         return employeeService.getEmployeeByCode(employeeCode);
     }
 
+    @GetMapping("/nic/{nic}")
+    public EmployeeModel getEmployeeByNic(@PathVariable String nic) {
+        return employeeService.getEmployeeByNic(nic);
+    }
+    @GetMapping("/phone/{phoneNumber}")
+    public EmployeeModel getEmployeeByPhone(@PathVariable String phoneNumber) {
+        return employeeService.getEmployeeByPhone(phoneNumber);
+    }
+
     @PostMapping
     public EmployeeModel addEmployee(@RequestBody EmployeeModel employeeModel) {
         return employeeService.addEmployee(employeeModel);
@@ -57,6 +66,29 @@ public class EmployeeController {
     public String deleteEmployeeByCode(@PathVariable String employeeCode) {
         employeeService.deleteEmployeeByCode(employeeCode);
         return "Employee with Code " + employeeCode + " deleted successfully.";
+    }
+
+    @PutMapping("/nic/{nic}")
+    public EmployeeModel updateEmployeeByNic(@PathVariable String nic,
+                                              @RequestBody EmployeeModel employeeModel) {
+        return employeeService.updateEmployeeByNic(nic, employeeModel);
+    }
+
+    @DeleteMapping("/nic/{nic}")
+    public String deleteEmployeeByNic(@PathVariable String nic) {
+        employeeService.deleteEmployeeByNic(nic);
+        return "Employee with Nic " + nic + " deleted successfully.";
+    }
+
+    @PutMapping("/phone/{phoneNumber}")
+    public EmployeeModel updateEmployeeByPhone(@PathVariable String phoneNumber, @RequestBody EmployeeModel employeeModel) {
+        return employeeService.updateEmployeeByPhone(phoneNumber, employeeModel);
+    }
+
+    @DeleteMapping("/phone/{phoneNumber}")
+    public String deleteEmployeeByPhone(@PathVariable String phoneNumber) {
+        employeeService.deleteEmployeeByPhone(phoneNumber);
+        return "Employee with Phone Number " + phoneNumber + " deleted successfully.";
     }
 
 }
