@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AttendanceDashboard from "../Attendance/AttendanceDashboard";
+import LeaveApplicationForm from "../Leave/LeaveApplicationForm";
+import ManagerLeaveApproval from "../Leave/ManagerApproval";
 import {
   Users,
   DollarSign,
@@ -46,6 +49,8 @@ const PayrollManagementSystem = () => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "employees", label: "Management", icon: Users },
     { id: "payroll", label: "Payroll", icon: DollarSign },
+    { id: "attendance", label: "Attendance", icon: Clock },
+    { id: "leave", label: "Leave", icon: Calendar },
     { id: "reports", label: "Reports", icon: FileText },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
@@ -1135,7 +1140,7 @@ const PayrollManagementSystem = () => {
               })}
             </div>
           </nav>
-
+    
           {/* User Profile */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center space-x-3">
@@ -1556,6 +1561,14 @@ const PayrollManagementSystem = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === "attendance" && (
+            <AttendanceDashboard />
+          )}
+
+          {activeTab === "leave" && (
+            <LeaveApplicationForm />
           )}
 
           {activeTab === "reports" && (
