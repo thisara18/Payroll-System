@@ -33,7 +33,7 @@ public class SecurityConfig {
                         // Protected endpoints - Allow all authenticated users to access employees for now
                         .requestMatchers("/api/admin/**").hasAuthority("Admin")
                         .requestMatchers("/api/hr/**").hasAuthority("HR")
-                        .requestMatchers("/api/employees/**").authenticated() // Changed from hasAuthority("Employee") to authenticated()
+                        .requestMatchers("/api/employees/**","/api/leaves/**").authenticated() // Changed from hasAuthority("Employee") to authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
